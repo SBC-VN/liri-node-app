@@ -57,15 +57,29 @@ function findConcert(band) {
 //
 //  Function to handle the find the song command.
 //
-function findSong(song) {
-    console.log("song",song);
+function findSong(song) {    
     spotify.search({ type: 'track', query: song }, function(err, data) {
         if (err) {
           return console.log('Error occurred: ' + err);
         }
        
-      console.log("songinfo", data); 
-      });
+        var latestTrack = data.tracks.items[0].album;
+
+        var songName = latestTrack.name;
+        var releaseDate = latestTrack.release_date;
+        var artistName = latestTrack.artists[0].name;
+        var image = latestTrack.images[0].url;
+        
+        console.log(" ");
+        console.log("------------------------------------------------------------------");
+        console.log("Found your song:");
+        console.log(" ");
+        console.log("      Artist:",artistName);
+        console.log("Artist Image:",image);
+        console.log("        Song:",songName);
+        console.log("    Released:",releaseDate);
+        console.log(" ");
+    });
 }
 
 //
