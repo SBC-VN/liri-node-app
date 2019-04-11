@@ -1,5 +1,6 @@
 require("dotenv").config();
 var keys = require("./keys.js");
+var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 var fs = require('fs');
 
@@ -32,15 +33,13 @@ function processOperation(operation,target) {
             break;
 
         case "do-what-it-says" :
-            fs.readFile('./random.txt', function (err, data) {
-                if (err) throw err;
-                var parts = data.split(",");
-
-                // Process the command, if it doesn't put us into an infinate loop.
-                if (parts[0] != "do-what-it-says") {
-                    processOperation(parts[0],parts[1]);
-                }
-            });
+            const content = fs.readFileSync('./random.txt', 'utf8');
+            var parts = content.split(",");
+            // Process the command, if it doesn't put us into an infinite loop.
+            if (parts[0] != "do-what-it-says") {
+                processOperation(parts[0],parts[1]);
+            }
+            break;
         default:
             console.log("Unknown instruction.");
             break;
@@ -58,8 +57,15 @@ function findConcert(band) {
 //
 //  Function to handle the find the song command.
 //
-function findConcert(song) {
+function findSong(song) {
     console.log("song",song);
+    spotify.search({ type: 'track', query: song }, function(err, data) {
+        if (err) {
+          return console.log('Error occurred: ' + err);
+        }
+       
+      console.log("songinfo", data); 
+      });
 }
 
 //
