@@ -3,6 +3,8 @@ var keys = require("./keys.js");
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 var fs = require('fs');
+var axios = require("axios");
+var moment = require('moment');
 
 if (process.argv.length > 3) {
     var operation = process.argv[2].toLowerCase();
@@ -41,7 +43,7 @@ function processOperation(operation,target) {
             }
             break;
         default:
-            console.log("Unknown instruction.");
+            console.log("Unknown instruction.",operation);
             break;
     }   
 }
@@ -51,7 +53,45 @@ function processOperation(operation,target) {
 //
 function findConcert(band) {
     var queryUrl = "https://rest.bandsintown.com/artists/" + band + "/events?app_id=codingbootcamp";
-    console.log("band",band);
+    if (!band) {
+        band = "Ace of Base";
+    }
+
+    axios.get(queryUrl).then(
+        function(response) {
+            if (response.data.length == 0) {
+                console.log("No records for your band",band);
+                return;
+            }
+            console.log(" ");
+            console.log("------------------------------------------------------------------");
+            console.log("Found your band:", band);
+            console.log(" ");
+            for (var record of response.data) {
+                momentDate = moment(record.datetime);
+                console.log("Date:" + momentDate.format("MM/DD/YYYY"));
+                console.log(" Event Name:" + record.venue.name);
+                console.log("   Location:" + record.venue.country);
+                console.log(" ");      
+            }
+        })
+        .catch(function(error) {
+            if (error.response) {
+              // The request was made and the server responded with a status code
+              // that falls out of the range of 2xx
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            } else if (error.request) {
+              // The request was made but no response was received
+              // `error.request` is an object that comes back with details pertaining to the error that occurred.
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request that triggered an Error
+              console.log("Error", error.message);
+            }
+            console.log(error.config);
+          });
 }
 
 //
@@ -86,5 +126,20 @@ function findSong(song) {
 //  Function to handle the find the song command.
 //
 function findMovie(movie) {
-    console.log("movie",movie);
+    var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
+    axios.get(queryUrl).then(
+        function(response) {
+            console.log(" ");
+            console.log("------------------------------------------------------------------");
+            console.log("Found your movie:");
+            console.log(" ");
+            console.log("Title: " + response.data.Title);
+            console.log("Year Released: " + response.data.Year);
+            console.log("IMDB Rating:   " + response.data.imdbRating);
+            console.log("Country: " + response.data.Country);
+            console.log("Language: " + response.data.Language);
+            console.log("Plot: " + response.data.Plot);
+            console.log("Actors: "+ response.data.Actors);
+            console.log(" ");
+        });
 }
