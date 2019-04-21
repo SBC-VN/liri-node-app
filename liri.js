@@ -6,11 +6,12 @@ var fs = require('fs');
 var axios = require("axios");
 var moment = require('moment');
 
-if (process.argv.length > 3) {
+if (process.argv.length > 2) {
     var operation = process.argv[2].toLowerCase();
-    var target = process.argv[3].toLowerCase();
 }
-else {
+
+if (process.argv.length > 3) {
+    var target = process.argv.slice(3).join(" ").toLowerCase();
 }
 
 processOperation(operation,target);
@@ -97,13 +98,26 @@ function findConcert(band) {
 //
 //  Function to handle the find the song command.
 //
-function findSong(song) {    
+function findSong(song) {
+    if (!song) {
+        song = "The Sign";
+    }
+
     spotify.search({ type: 'track', query: song }, function(err, data) {
         if (err) {
           return console.log('Error occurred: ' + err);
         }
-       
+        
+        // Get the first match returned.
         var latestTrack = data.tracks.items[0].album;
+
+        // Now Find the first *exact* match
+        for (track of data.tracks.items) {
+            if (track.name.toLowerCase() === song.toLowerCase()) {
+                latestTrack = track.album;
+                break;
+            }
+        }
 
         var songName = latestTrack.name;
         var releaseDate = latestTrack.release_date;
@@ -112,7 +126,7 @@ function findSong(song) {
         
         console.log(" ");
         console.log("------------------------------------------------------------------");
-        console.log("Found your song:");
+        console.log("Found your song (" + song + ") :");
         console.log(" ");
         console.log("      Artist:",artistName);
         console.log("Artist Image:",image);
@@ -126,6 +140,9 @@ function findSong(song) {
 //  Function to handle the find the song command.
 //
 function findMovie(movie) {
+    if (!movie) {
+        movie = "mr nobody";
+    }
     var queryUrl = "http://www.omdbapi.com/?t=" + movie + "&y=&plot=short&apikey=trilogy";
     axios.get(queryUrl).then(
         function(response) {
